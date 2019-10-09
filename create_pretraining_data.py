@@ -108,7 +108,7 @@ def write_instance_to_example_files(instances, tokenizer, max_seq_length,
     input_mask = [1] * len(input_ids)
     segment_ids = list(instance.segment_ids)
     assert len(input_ids) <= max_seq_length
-
+    #把每一个句子都弄成一样长的.如果不到max_seq_length就补0.
     while len(input_ids) < max_seq_length:
       input_ids.append(0)
       input_mask.append(0)
