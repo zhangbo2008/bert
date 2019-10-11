@@ -27,14 +27,19 @@ flags = tf.flags
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string("input_file", None,
+
+'''
+把DEFINE_string 里面第二个变量输入进去就能运行了.
+'''
+
+flags.DEFINE_string("input_file", 'input.txt',
                     "Input raw text file (or comma-separated list of files).")
 
 flags.DEFINE_string(
-    "output_file", None,
+    "output_file", './output',
     "Output TF example file (or comma-separated list of files).")
 
-flags.DEFINE_string("vocab_file", None,
+flags.DEFINE_string("vocab_file", 'model/vocab.txt',
                     "The vocabulary file that the BERT model was trained on.")
 
 flags.DEFINE_bool(
@@ -327,7 +332,7 @@ def create_instances_from_document(
             is_random_next=is_random_next,
             masked_lm_positions=masked_lm_positions,
             masked_lm_labels=masked_lm_labels)
-        instances.append(instance)
+        instances.append(instance)#得到了cloze例子instance
       current_chunk = []
       current_length = 0
     i += 1
@@ -397,7 +402,7 @@ def create_masked_lm_predictions(tokens, masked_lm_prob,
         if rng.random() < 0.5:
           masked_token = tokens[index]
         # 10% of the time, replace with random word
-        else:
+        else:         #这样让词汇从mask,真实,虚假,都能从上下文学出来句子的向量化.#这样最后预测就使用了真实这个百分之10的学习
           masked_token = vocab_words[rng.randint(0, len(vocab_words) - 1)]
 
       output_tokens[index] = masked_token
@@ -452,7 +457,7 @@ def main(_):
       input_files, tokenizer, FLAGS.max_seq_length, FLAGS.dupe_factor,
       FLAGS.short_seq_prob, FLAGS.masked_lm_prob, FLAGS.max_predictions_per_seq,
       rng)
-
+#因为dup=10,总共4句话,会输出40个训练instance
   output_files = FLAGS.output_file.split(",")
   tf.logging.info("*** Writing to output files ***")
   for output_file in output_files:
@@ -463,7 +468,8 @@ def main(_):
 
 
 if __name__ == "__main__":
-  flags.mark_flag_as_required("input_file")
-  flags.mark_flag_as_required("output_file")
-  flags.mark_flag_as_required("vocab_file")
-  tf.app.run()
+  #先手动指定下面3个参数,然后运行debug
+  # flags.mark_flag_as_required("input_file")
+  # flags.mark_flag_as_required("output_file")
+  # flags.mark_flag_as_required("vocab_file")
+  tf.app.run()  #这个会自动调用上的main函数

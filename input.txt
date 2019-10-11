@@ -1,0 +1,7 @@
+一、准备用于训练的数据：（参考：Pre-training with BERT）
+
+1、从GitHub的说明可知，用于训练的语料（纯文本）可以放在多个文件中，每个文件中一个句子放在一行，每个文件中来自同一篇文档的句子之间没有空行，不同文档之间的用一个空行间隔，以示区别不同的文档。
+
+2、获得从纯文本到用于TF训练输入的脚本是：create_pretraining_data.py
+
+运行该文档需要一个词表 vocab.txt，BERT没有说明该词表应该如何产生，并且BERT给出的示例运行脚本中使用的是一个 sample_text.txt 文件，该文件中是英文，所以猜测只要将BERT发布的 Pre-trained models 中任何一个模型中包含的vocab.txt 拿过来放到这边就可以了；不需要自己根据sample_text.txt 重新产生一个vocab.txt
