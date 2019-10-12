@@ -31,14 +31,14 @@ flags = tf.flags
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_string("input_file", None, "")
+flags.DEFINE_string("input_file", './input.txt', "")
 
-flags.DEFINE_string("output_file", None, "")
+flags.DEFINE_string("output_file", './out2', "")
 
 flags.DEFINE_string("layers", "-1,-2,-3,-4", "")
 
 flags.DEFINE_string(
-    "bert_config_file", None,
+    "bert_config_file", './model/bert_config.json',
     "The config json file corresponding to the pre-trained BERT model. "
     "This specifies the model architecture.")
 
@@ -48,11 +48,11 @@ flags.DEFINE_integer(
     "Sequences longer than this will be truncated, and sequences shorter "
     "than this will be padded.")
 
-flags.DEFINE_string(
-    "init_checkpoint", None,
+flags.DEFINE_string(#注意路径必须先写.否则看做绝对路径
+    "init_checkpoint", './model/bert_model.ckpt',
     "Initial checkpoint (usually from a pre-trained BERT model).")
 
-flags.DEFINE_string("vocab_file", None,
+flags.DEFINE_string("vocab_file", './model/vocab.txt',
                     "The vocabulary file that the BERT model was trained on.")
 
 flags.DEFINE_bool(
@@ -172,7 +172,7 @@ def model_fn_builder(bert_config, init_checkpoint, layer_indexes, use_tpu,
     scaffold_fn = None
     (assignment_map,
      initialized_variable_names) = modeling.get_assignment_map_from_checkpoint(
-         tvars, init_checkpoint)
+         tvars, init_checkpoint) #init_checkpoint 必须传入
     if use_tpu:
 
       def tpu_scaffold():
