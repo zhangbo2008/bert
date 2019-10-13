@@ -162,7 +162,7 @@ class BertModel(object):
     batch_size = input_shape[0]
     seq_length = input_shape[1]
 
-    if input_mask is None:
+    if input_mask is None:#如果没传入mask就表示所有位置的值都取,所以就是1.
       input_mask = tf.ones(shape=[batch_size, seq_length], dtype=tf.int32)
 
     if token_type_ids is None:
@@ -172,7 +172,7 @@ class BertModel(object):
       with tf.variable_scope("embeddings"):
         # Perform embedding lookup on the word ids.
         (self.embedding_output, self.embedding_table) = embedding_lookup(
-            input_ids=input_ids,
+            input_ids=input_ids,#embed就是矩阵乘法.
             vocab_size=config.vocab_size,
             embedding_size=config.hidden_size,
             initializer_range=config.initializer_range,
@@ -484,9 +484,9 @@ def embedding_postprocessor(input_tensor,
     token_type_embeddings = tf.matmul(one_hot_ids, token_type_table)
     token_type_embeddings = tf.reshape(token_type_embeddings,
                                        [batch_size, seq_length, width])
-    output += token_type_embeddings
+    output += token_type_embeddings#使用残差网络
 
-  if use_position_embeddings:
+  if use_position_embeddings:#position embedding table 用来体现位置.
     assert_op = tf.assert_less_equal(seq_length, max_position_embeddings)
     with tf.control_dependencies([assert_op]):
       full_position_embeddings = tf.get_variable(
@@ -501,7 +501,7 @@ def embedding_postprocessor(input_tensor,
       # So `full_position_embeddings` is effectively an embedding table
       # for position [0, 1, 2, ..., max_position_embeddings-1], and the current
       # sequence has positions [0, 1, 2, ... seq_length-1], so we can just
-      # perform a slice.
+      # perform a slice.  #https://www.jianshu.com/p/71e6ef6c121b  tf.slice说明
       position_embeddings = tf.slice(full_position_embeddings, [0, 0],
                                      [seq_length, -1])
       num_dims = len(output.shape.as_list())
@@ -699,13 +699,13 @@ def attention_layer(from_tensor,
   # attention scores.
   # `attention_scores` = [B, N, F, T]
   attention_scores = tf.matmul(query_layer, key_layer, transpose_b=True)
-  attention_scores = tf.multiply(attention_scores,
+  attention_scores = tf.multiply(attention_scores,  #除掉编码头的数量
                                  1.0 / math.sqrt(float(size_per_head)))
 
   if attention_mask is not None:
     # `attention_mask` = [B, 1, F, T]
     attention_mask = tf.expand_dims(attention_mask, axis=[1])
-
+    #预测对了是0,否则是负1万
     # Since attention_mask is 1.0 for positions we want to attend and 0.0 for
     # masked positions, this operation will create a tensor which is 0.0 for
     # positions we want to attend and -10000.0 for masked positions.
@@ -830,7 +830,7 @@ def transformer_model(input_tensor,
       with tf.variable_scope("attention"):
         attention_heads = []
         with tf.variable_scope("self"):
-          attention_head = attention_layer(
+          attention_head = attention_layer(#这个函数是核心
               from_tensor=layer_input,
               to_tensor=layer_input,
               attention_mask=attention_mask,
