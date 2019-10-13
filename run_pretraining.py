@@ -29,16 +29,16 @@ FLAGS = flags.FLAGS
 
 ## Required parameters
 flags.DEFINE_string(
-    "bert_config_file", None,
+    "bert_config_file", './model/bert_config.json',
     "The config json file corresponding to the pre-trained BERT model. "
     "This specifies the model architecture.")
 
 flags.DEFINE_string(
-    "input_file", None,
+    "input_file", './input.txt',
     "Input TF example files (can be a glob or comma separated).")
 
 flags.DEFINE_string(
-    "output_dir", None,
+    "output_dir", './tmp',
     "The output directory where the model checkpoints will be written.")
 
 ## Other parameters
@@ -57,7 +57,7 @@ flags.DEFINE_integer(
     "Maximum number of masked LM predictions per sequence. "
     "Must match data generation.")
 
-flags.DEFINE_bool("do_train", False, "Whether to run training.")
+flags.DEFINE_bool("do_train", True, "Whether to run training.")
 
 flags.DEFINE_bool("do_eval", False, "Whether to run eval on the dev set.")
 
@@ -487,7 +487,7 @@ def main(_):
 
 
 if __name__ == "__main__":
-  flags.mark_flag_as_required("input_file")
-  flags.mark_flag_as_required("bert_config_file")
-  flags.mark_flag_as_required("output_dir")
+  # flags.mark_flag_as_required("input_file")
+  # flags.mark_flag_as_required("bert_config_file")
+  # flags.mark_flag_as_required("output_dir")
   tf.app.run()

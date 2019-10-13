@@ -503,7 +503,7 @@ def embedding_postprocessor(input_tensor,
       # sequence has positions [0, 1, 2, ... seq_length-1], so we can just
       # perform a slice.  #https://www.jianshu.com/p/71e6ef6c121b  tf.slice说明
       position_embeddings = tf.slice(full_position_embeddings, [0, 0],
-                                     [seq_length, -1])
+                                     [seq_length, -1])  #切割长度为7
       num_dims = len(output.shape.as_list())
 
       # Only the last two dimensions are relevant (`seq_length` and `width`), so
@@ -516,7 +516,7 @@ def embedding_postprocessor(input_tensor,
       position_embeddings = tf.reshape(position_embeddings,
                                        position_broadcast_shape)
       output += position_embeddings
-
+  #把position作为一个特征直接加到output里面.
   output = layer_norm_and_dropout(output, dropout_prob)
   return output
 
@@ -851,7 +851,7 @@ def transformer_model(input_tensor,
           # In the case where we have other sequences, we just concatenate
           # them to the self-attention head before the projection.
           attention_output = tf.concat(attention_heads, axis=-1)
-
+#然后下面接一堆dnn
         # Run a linear projection of `hidden_size` then add a residual
         # with `layer_input`.
         with tf.variable_scope("output"):
