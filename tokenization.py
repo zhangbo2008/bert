@@ -169,8 +169,8 @@ class FullTokenizer(object):
 
   def tokenize(self, text):
     split_tokens = []
-    for token in self.basic_tokenizer.tokenize(text):
-      for sub_token in self.wordpiece_tokenizer.tokenize(token):
+    for token in self.basic_tokenizer.tokenize(text):#先进行标点分词
+      for sub_token in self.wordpiece_tokenizer.tokenize(token):#再运行piece分词
         split_tokens.append(sub_token)
 
     return split_tokens
@@ -310,7 +310,7 @@ class WordpieceTokenizer(object):#就是sequencepiece算法.
 
     This uses a greedy longest-match-first algorithm to perform tokenization
     using the given vocabulary.
-longest-match-first algorithm:妈的,就是遍历,写的像很牛逼似的,其实效率很慢
+longest-match-first algorithm:妈的,就是遍历,写的像很牛逼似的,其实效率很慢,因为字典很小,才3W.字符串长也就200,所有也就百万级,随便遍历,都不会过分影响时间.
     For example:
       input = "unaffable"
       output = ["un", "##aff", "##able"]

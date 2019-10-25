@@ -94,7 +94,7 @@ flags.DEFINE_integer("predict_batch_size", 8, "Total batch size for predict.")
 
 flags.DEFINE_float("learning_rate", 5e-5, "The initial learning rate for Adam.")
 
-flags.DEFINE_float("num_train_epochs", 0.1,
+flags.DEFINE_float("num_train_epochs", 1,
                    "Total number of training epochs to perform.")
 
 flags.DEFINE_float(
@@ -396,7 +396,7 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
         segment_ids=[0] * max_seq_length,
         label_id=0,
         is_real_example=False)
-
+#对数据进行编码
   label_map = {}
   for (i, label) in enumerate(label_list):
     label_map[label] = i
@@ -410,7 +410,7 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
     # Modifies `tokens_a` and `tokens_b` in place so that the total
     # length is less than the specified length.
     # Account for [CLS], [SEP], [SEP] with "- 3"
-    _truncate_seq_pair(tokens_a, tokens_b, max_seq_length - 3)
+    _truncate_seq_pair(tokens_a, tokens_b, max_seq_length - 3)#  说明[CLS]不是bert原创，在GPT中就有。在GPT中用于句子的分类，判断[CLS]开头的句子是不是下一句。
   else:
     # Account for [CLS] and [SEP] with "- 2"
     if len(tokens_a) > max_seq_length - 2:
@@ -433,15 +433,15 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
   #
   # For classification tasks, the first vector (corresponding to [CLS]) is
   # used as the "sentence vector". Note that this only makes sense because
-  # the entire model is fine-tuned.
+  # the entire model is fine-tuned.            表示当前句子确实是一个合理的句子
   tokens = []
   segment_ids = []
-  tokens.append("[CLS]")
+  tokens.append("[CLS]") #所以句子要先打上cls标签.
   segment_ids.append(0)
   for token in tokens_a:
     tokens.append(token)
-    segment_ids.append(0)
-  tokens.append("[SEP]")
+    segment_ids.append(0)# 这个表示表示这是第一个句子
+  tokens.append("[SEP]") #sep表示句子结尾
   segment_ids.append(0)
 
   if tokens_b:
@@ -458,7 +458,7 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
   input_mask = [1] * len(input_ids)
 
   # Zero-pad up to the sequence length.
-  while len(input_ids) < max_seq_length:
+  while len(input_ids) < max_seq_length:#剩余全补0
     input_ids.append(0)
     input_mask.append(0)
     segment_ids.append(0)
@@ -493,7 +493,7 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
 def file_based_convert_examples_to_features(
     examples, label_list, max_seq_length, tokenizer, output_file):
   """Convert a set of `InputExample`s to a TFRecord file."""
-
+  #把数据预处理到ouput_file里面.
   writer = tf.python_io.TFRecordWriter(output_file)
 
   for (ex_index, example) in enumerate(examples):
@@ -838,9 +838,9 @@ def main(_):
       vocab_file=FLAGS.vocab_file, do_lower_case=FLAGS.do_lower_case)
 
   tpu_cluster_resolver = None
-  if FLAGS.use_tpu and FLAGS.tpu_name:
-    tpu_cluster_resolver = tf.contrib.cluster_resolver.TPUClusterResolver(
-        FLAGS.tpu_name, zone=FLAGS.tpu_zone, project=FLAGS.gcp_project)
+  # if FLAGS.use_tpu and FLAGS.tpu_name: #如果使用tpu才会进入这行.
+  #   tpu_cluster_resolver = tf.contrib.cluster_resolver.TPUClusterResolver(
+  #       FLAGS.tpu_name, zone=FLAGS.tpu_zone, project=FLAGS.gcp_project)
 
   is_per_host = tf.contrib.tpu.InputPipelineConfig.PER_HOST_V2
   run_config = tf.contrib.tpu.RunConfig(
