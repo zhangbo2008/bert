@@ -26,7 +26,29 @@ Stanford Question Answering Dataset (SQuAD) is a reading comprehension dataset, 
 
 
 
+http://www.52nlp.cn/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E5%AE%9E%E8%B7%B5-%E4%BB%8E%E9%9B%B6%E5%BC%80%E5%A7%8B%E5%81%9A%E7%94%B5%E5%BD%B1%E8%AF%84%E8%AE%BA%E6%96%87%E6%9C%AC%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90
 
+这个很重要
+https://mp.weixin.qq.com/s/qnsvDQvPZSJG6rDtbFGggA
+
+
+Sota值:就是state of the art 世界第一.
+
+确实代码跑多了,没意思,应该去翻翻书,补基础了.确实需要看懂em算法.好像是最大熵.
+是最大期望,在李航的书上写了.
+
+
+dropout层的使用:
+https://www.zhihu.com/question/61751133?sort=created
+
+
+
+2019-10-14,11点43
+
+bert:本质是完形填空,填对了就损失0,错了就负1万,非监督.所以可以随便finetune
+
+
+使用bert:使用test1.py来测试movie 情感分类.
 
 
 

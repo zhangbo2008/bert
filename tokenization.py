@@ -184,7 +184,7 @@ class FullTokenizer(object):
 
 class BasicTokenizer(object):
   """Runs basic tokenization (punctuation splitting, lower casing, etc.)."""
-
+#  punctuation 标点符号
   def __init__(self, do_lower_case=True):
     """Constructs a BasicTokenizer.
 
@@ -297,11 +297,11 @@ class BasicTokenizer(object):
     return "".join(output)
 
 
-class WordpieceTokenizer(object):
+class WordpieceTokenizer(object):#就是sequencepiece算法.
   """Runs WordPiece tokenziation."""
 
   def __init__(self, vocab, unk_token="[UNK]", max_input_chars_per_word=200):
-    self.vocab = vocab
+    self.vocab = vocab #unk, cls,sep,mask
     self.unk_token = unk_token
     self.max_input_chars_per_word = max_input_chars_per_word
 
@@ -310,7 +310,7 @@ class WordpieceTokenizer(object):
 
     This uses a greedy longest-match-first algorithm to perform tokenization
     using the given vocabulary.
-
+longest-match-first algorithm:妈的,就是遍历,写的像很牛逼似的,其实效率很慢
     For example:
       input = "unaffable"
       output = ["un", "##aff", "##able"]
@@ -335,17 +335,17 @@ class WordpieceTokenizer(object):
       is_bad = False
       start = 0
       sub_tokens = []
-      while start < len(chars):
+      while start < len(chars): #找这个字符,匹配
         end = len(chars)
         cur_substr = None
-        while start < end:
-          substr = "".join(chars[start:end])
+        while start < end:#定义头和尾
+          substr = "".join(chars[start:end])#抽取子串
           if start > 0:
-            substr = "##" + substr
+            substr = "##" + substr  #,  '##'符号表示一句话的开始. self.vocab是一个有顺序的字典
           if substr in self.vocab:
             cur_substr = substr
             break
-          end -= 1
+          end -= 1#从最长的找,没找到就end-1
         if cur_substr is None:
           is_bad = True
           break

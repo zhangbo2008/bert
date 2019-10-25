@@ -1,27 +1,7 @@
-## %%
+##
 
-# Copyright 2019 Google Inc.
 
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-
-#     http://www.apache.org/licenses/LICENSE-2.0
-
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# %% md
-
-# Predicting Movie Review Sentiment with BERT on TF Hub
-
-# %% md
-
-# %%
-
+# tf 版本需要1.14
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import tensorflow as tf
@@ -85,26 +65,32 @@ def load_directory_data(directory):
     data["sentiment"] = []
     for file_path in os.listdir(directory):
         with tf.gfile.GFile(os.path.join(directory, file_path), "r") as f:
-            data["sentence"].append(f.read())
+            data["sentence"].append(f.read()) #文件名是xxx_xxx.txt 第一个数表示编码,第二个数表示情感数
             data["sentiment"].append(re.match("\d+_(\d+)\.txt", file_path).group(1))
     return pd.DataFrame.from_dict(data)
 
+'''
 
+'''
 # Merge positive and negative examples, add a polarity column and shuffle.
 def load_dataset(directory):
     pos_df = load_directory_data(os.path.join(directory, "pos"))
     neg_df = load_directory_data(os.path.join(directory, "neg"))
-    pos_df["polarity"] = 1
-    neg_df["polarity"] = 0
+    pos_df["polarity"] = 1  #polatriyt : 两极化
+    neg_df["polarity"] = 0    #下行的sample表示抽样,frac=1表示全部抽样,就是shuffle
     return pd.concat([pos_df, neg_df]).sample(frac=1).reset_index(drop=True)
 
 
 # Download and process the dataset files.
 def download_and_load_datasets(force_download=False):
-    dataset = tf.keras.utils.get_file(
-        fname="aclImdb.tar.gz",
-        origin="http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",
-        extract=True)
+    if os.path.exists('./aclImdb'):
+        dataset='./'
+    else:
+
+        dataset = tf.keras.utils.get_file(
+            fname="aclImdb.tar.gz",
+            origin="http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",
+            extract=True)
 
     train_df = load_dataset(os.path.join(os.path.dirname(dataset),
                                          "aclImdb", "train"))
@@ -125,70 +111,23 @@ train, test = download_and_load_datasets()
 train = train.sample(5000)
 test = test.sample(5000)
 ##
-# %%
 
-train.columns
 
-# %% md
+#这里面没用到sentiment这个字段.
 
-For
-us, our
-input
-data is the
-'sentence'
-column and our
-label is the
-'polarity'
-column(0, 1
-for negative and positive, respecitvely)
+#直接sentence 做的2分类
 
-# %%
 
 DATA_COLUMN = 'sentence'
 LABEL_COLUMN = 'polarity'
 # label_list is the list of labels, i.e. True, False or 0, 1 or 'dog', 'cat'
 label_list = [0, 1]
 
-# %% md
+'''
+下行利用bert.run_classifier.InputExample这个函数把pd数据集喂给text_a,text_b,label
+这3个变量做继续处理.
+'''
 
-# Data Preprocessing
-We
-'ll need to transform our data into a format BERT understands. This involves two steps. First, we create  `InputExample`'
-s
-using
-the
-constructor
-provided in the
-BERT
-library.
-
-- `text_a` is the
-text
-we
-want
-to
-classify, which in this
-case, is the
-`Request`
-field in our
-Dataframe.
-- `text_b` is used if we
-'re training a model to understand the relationship between sentences (i.e. is `text_b` a translation of `text_a`? Is `text_b` an answer to the question asked by `text_a`?). This doesn'
-t
-apply
-to
-our
-task, so
-we
-can
-leave
-`text_b`
-blank.
-- `label` is the
-label
-for our example, i.e. True, False
-
-# %%
 
 # Use the InputExample class from BERT's run_classifier code to create examples from the data
 train_InputExamples = train.apply(
@@ -201,99 +140,53 @@ test_InputExamples = test.apply(lambda x: bert.run_classifier.InputExample(guid=
                                                                            text_a=x[DATA_COLUMN],
                                                                            text_b=None,
                                                                            label=x[LABEL_COLUMN]), axis=1)
-
+##
 # %% md
+#下面进行预处理
 
-Next, we
-need
-to
-preprocess
-our
-data
-so
-that
-it
-matches
-the
-data
-BERT
-was
-trained
-on.For
-this, we
-'ll need to do a couple of things (but don'
-t
-worry - -this is also
-included in the
-Python
-library):
+'''
+
+1.小写
+2.分词
+2.Break words into WordPieces (i.e. "calling" -> ["call", "##ing"])
+3.Map our words to indexes using a vocab file that BERT provides .编码
+4.Add special "CLS" and "SEP" tokens   #BERT 为什么第一个词为[CLS]  bert里面第一个词
+写作cls,表示classification
+
+5.被切开的词会标记##符号；每个sequence的开头都会加入特定符号[CLS]；用[SEP]分割句子对，并且用segment embedding来标记句子对的两部分，
+2
+'''
 
 
-1.
-Lowercase
-our
-text( if we
-'re using a BERT lowercase model)
-2.
-Tokenize
-it(i.e.
-"sally says hi" -> ["sally", "says", "hi"])
-3.
-Break
-words
-into
-WordPieces(i.e.
-"calling" -> ["call", "##ing"])
-4.
-Map
-our
-words
-to
-indexes
-using
-a
-vocab
-file
-that
-BERT
-provides
-5.
-Add
-special
-"CLS" and "SEP"
-tokens(see
-the[readme](https: // github.com / google - research / bert))
-6.
-Append
-"index" and "segment"
-tokens
-to
-each
-input(see
-the[BERT
-paper](https: // arxiv.org / pdf / 1810.04805.pdf))
-
-Happily, we
-don
-'t have to worry about most of these details.
-
-# %% md
-
-To
-start, we
-'ll need to load a vocabulary file and lowercasing information directly from the BERT tf hub module:
-
-# %%
 
 # This is a path to an uncased (all lowercase) version of BERT
+
+#下面地址下不动,去https://python.ctolib.com/google-research-bert.html 这里面找对应的下载.
+
+
+import bert
+from bert import run_classifier
+from bert import optimization
+from bert import tokenization
+from sklearn.model_selection import train_test_split
+import pandas as pd
+import tensorflow as tf
+import tensorflow_hub as hub
+from datetime import datetime
+
+
+
 BERT_MODEL_HUB = "https://tfhub.dev/google/bert_uncased_L-12_H-768_A-12/1"
 
 
+
+# BERT_MODEL_HUB='./uncased_L-12_H-768_A-12'
 def create_tokenizer_from_hub_module():
     """Get the vocab file and casing info from the Hub module."""
     with tf.Graph().as_default():
         bert_module = hub.Module(BERT_MODEL_HUB)
         tokenization_info = bert_module(signature="tokenization_info", as_dict=True)
+        print(tokenization_info)
         with tf.Session() as sess:
             vocab_file, do_lower_case = sess.run([tokenization_info["vocab_file"],
                                                   tokenization_info["do_lower_case"]])
@@ -304,36 +197,13 @@ def create_tokenizer_from_hub_module():
 
 tokenizer = create_tokenizer_from_hub_module()
 
-# %% md
-
-Great - -we
-just
-learned
-that
-the
-BERT
-model
-we
-'re using expects lowercase data (that'
-s
-what
-stored in tokenization_info["do_lower_case"]) and we
-also
-loaded
-BERT
-'s vocab file. We also created a tokenizer, which breaks words into word pieces:
-
-# %%
 
 tokenizer.tokenize("This here's an example of using the BERT tokenizer")
-
+##
 # %% md
+'''
 
-Using
-our
-tokenizer, we
-'ll call `run_classifier.convert_examples_to_features` on our InputExamples to convert them into features BERT understands.
-
+'''
 # %%
 
 # We'll set sequences to be at most 128 tokens long.

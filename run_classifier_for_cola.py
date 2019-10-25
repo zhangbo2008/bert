@@ -30,30 +30,41 @@ flags = tf.flags
 
 FLAGS = flags.FLAGS
 
+'''
+对数据及cola_public进行描述:
+
+第一列0,1表示这个句子是否合法,合乎语法.
+第二列是句子本身字符串
+
+
+'''
+
+
+
 ## Required parameters
 flags.DEFINE_string(
-    "data_dir", None,
+    "data_dir", './cola_public',
     "The input data dir. Should contain the .tsv files (or other data files) "
     "for the task.")
 
 flags.DEFINE_string(
-    "bert_config_file", None,
+    "bert_config_file", './model_english/bert_config.json',
     "The config json file corresponding to the pre-trained BERT model. "
     "This specifies the model architecture.")
 
 flags.DEFINE_string("task_name", 'cola', "The name of the task to train.")
 
-flags.DEFINE_string("vocab_file", None,
+flags.DEFINE_string("vocab_file", './model_english/vocab.txt',
                     "The vocabulary file that the BERT model was trained on.")
 
 flags.DEFINE_string(
-    "output_dir", None,
+    "output_dir", './output_cola',
     "The output directory where the model checkpoints will be written.")
 
 ## Other parameters
 
 flags.DEFINE_string(
-    "init_checkpoint", None,
+    "init_checkpoint",  './model_english/bert_model.ckpt',
     "Initial checkpoint (usually from a pre-trained BERT model).")
 
 flags.DEFINE_bool(
@@ -63,16 +74,16 @@ flags.DEFINE_bool(
 
 flags.DEFINE_integer(
     "max_seq_length", 128,
-    "The maximum total input sequence length after WordPiece tokenization. "
+  "The maximum total input sequence length after WordPiece tokenization. "
     "Sequences longer than this will be truncated, and sequences shorter "
     "than this will be padded.")
 
-flags.DEFINE_bool("do_train", False, "Whether to run training.")
+flags.DEFINE_bool("do_train", True, "Whether to run training.")
 
 flags.DEFINE_bool("do_eval", False, "Whether to run eval on the dev set.")
 
 flags.DEFINE_bool(
-    "do_predict", False,
+    "do_predict", True,
     "Whether to run the model in inference mode on the test set.")
 
 flags.DEFINE_integer("train_batch_size", 32, "Total batch size for training.")
@@ -83,7 +94,7 @@ flags.DEFINE_integer("predict_batch_size", 8, "Total batch size for predict.")
 
 flags.DEFINE_float("learning_rate", 5e-5, "The initial learning rate for Adam.")
 
-flags.DEFINE_float("num_train_epochs", 3.0,
+flags.DEFINE_float("num_train_epochs", 0.1,
                    "Total number of training epochs to perform.")
 
 flags.DEFINE_float(
@@ -457,6 +468,9 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
   assert len(segment_ids) == max_seq_length
 
   label_id = label_map[example.label]
+
+
+  #先打印输入数据的例子
   if ex_index < 5:
     tf.logging.info("*** Example ***")
     tf.logging.info("guid: %s" % (example.guid))
@@ -781,6 +795,10 @@ def convert_examples_to_features(examples, label_list, max_seq_length,
 
 
 def main(_):
+
+
+
+ # with tf.device('/gpu:0'): #强制使用gpu
   tf.logging.set_verbosity(tf.logging.INFO)
 
   processors = {
@@ -973,12 +991,13 @@ def main(_):
 
 
 if __name__ == "__main__":
-  flags.mark_flag_as_required("data_dir")
+  # flags.mark_flag_as_required("data_dir")
   # flags.mark_flag_as_required("task_name")
-  flags.mark_flag_as_required("vocab_file")
-  flags.mark_flag_as_required("bert_config_file")
-  flags.mark_flag_as_required("output_dir")
+  # flags.mark_flag_as_required("vocab_file")
+  # flags.mark_flag_as_required("bert_config_file")
+  # flags.mark_flag_as_required("output_dir")
   tf.app.run()
+  print('都结束了')
 
 
 #因为没有tfhub网络不通,所以用这个.py来跑.
